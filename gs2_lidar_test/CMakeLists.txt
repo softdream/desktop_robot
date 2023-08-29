@@ -34,6 +34,12 @@ INCLUDE_DIRECTORIES( ${OpenCV_INCLUDE_DIRS} )
 # link directories of opencv
 LINK_DIRECTORIES( ${OpenCV_LIBRARIES_DIRS} )
 
+# package of eigen3
+FIND_PACKAGE( Eigen3 )
+
+# include directory of Eigen3
+INCLUDE_DIRECTORIES( ${EIGEN3_INCLUDE_DIR} )
+
 ADD_EXECUTABLE( ${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/main.cpp )
 
 TARGET_LINK_LIBRARIES( ${PROJECT_NAME} ydlidar_driver.a pthread )
