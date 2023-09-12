@@ -2,6 +2,7 @@
 #include "event_manage.h"
 #include "timer.h"
 #include "imu_driver.h"
+#include "data_transport.h"
 
 #include <unistd.h>
 
@@ -13,9 +14,19 @@ timer::Timer timer_instance;
 motor::Motor<float> motor_instance;
 imu::MPU6050<float> mpu_6050;
 
+transport::Receiver recver(2333);
+
 sensor::MotorDataF motor_data;
 sensor::ImuDataF imu_data;
 // --------------------------------------------------------------------------- //
+
+// udp receive callback function
+void recverCallback( int fd, void* arg )
+{
+	std::cout<<"recver callback ..."<<std::endl;
+
+	//recver.receive(  );
+}
 
 // timer callback function
 void timerCallback( int fd, void* arg )
@@ -43,8 +54,12 @@ void chassisControlThread()
 	timer_instance.createTimer();
 
 	// 3. Epoll : add a timer event
-	event::Event event( timer_instance.getTimerFd(), EPOLLIN, timerCallback, nullptr );
-        event_instance.addEvent( event );
+	event::Event event_timer( timer_instance.getTimerFd(), EPOLLIN, timerCallback, nullptr );
+        event_instance.addEvent( event_timer );
+
+	// 4. Epoll : add a udp event
+	event::Event event_recver( recver.getSocketFd(), EPOLLIN, recverCallback, nullptr );
+	event_instance.addEvent( event_recver );
 
 	// 4. start the timer
 	timer_instance.setTimer( 1, 0, 0, 50000000 ); // 50ms
