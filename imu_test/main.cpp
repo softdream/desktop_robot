@@ -5,7 +5,7 @@ int main()
 {
 	std::cout<<"--------------------- IMU TEST -------------------"<<std::endl;
 
-	imu::MPU6050 mpu_6050;
+	imu::MPU6050<float> mpu_6050;
 	mpu_6050.init();
 
 	while ( 1 ) {
