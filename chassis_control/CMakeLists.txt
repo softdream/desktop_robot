@@ -8,6 +8,12 @@ ADD_DEFINITIONS( -std=c++17 )
 
 SET( CMAKE_BUILD_TYPE Release )
 
+# find required eigen3
+FIND_PACKAGE( Eigen3 )
+
+#directory of eigen headers
+INCLUDE_DIRECTORIES( ${EIGEN3_INCLUDE_DIR} )
+
 # include directory
 INCLUDE_DIRECTORIES(
         ${CMAKE_SOURCE_DIR}

@@ -3,6 +3,7 @@
 #include "timer.h"
 #include "imu_driver.h"
 #include "data_transport.h"
+#include "ekf_fusion.h"
 
 #include <unistd.h>
 
