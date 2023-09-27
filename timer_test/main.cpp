@@ -2,6 +2,8 @@
 #include "event_manage.h"
 #include "time_stamp.h"
 
+#include <unistd.h>
+
 timer::Timer timer_instance;
 
 void timerCallback( int fd, void* arg )
@@ -12,6 +14,8 @@ void timerCallback( int fd, void* arg )
 
 	auto stamp = stamp::TimeStamp::getCurrentTimeMs();
 	std::cout<<stamp<<std::endl;
+
+	usleep(80000);
 }
 
 int main()

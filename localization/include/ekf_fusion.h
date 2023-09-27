@@ -2,8 +2,8 @@
 #define __EKF_FUSION_H
 
 #include <iostream>
-#include <Eigen/Dense>
-#include <cmath>
+
+#include "utils.h"
 
 #ifndef M_PI 
 #define M_PI 3.141592653
@@ -37,11 +37,6 @@ public:
 	// input control vector: ( delta_s, delta_theta )
 	void predict( const Vector2& u_now ) 
 	{
-		if( is_init_ == false ){
-			is_init_ = true;
-			
-			return;
-		}
 #ifdef DEBUG
 		std::cout<<" start predict "<<std::endl;
 #endif
@@ -51,7 +46,7 @@ public:
 		x_now_(2) = x_pre_(2) + u_now(1); // theta
 
 		// added
-		angleNormalize( x_now_[2] );
+		Utils::angleNormalize( x_now_[2] );
 
 		// 2. caculate state Jacobian matrix	
 		F_ = Matrix3::Identity();
@@ -60,20 +55,10 @@ public:
 	
 		// 3. state covarince prediction
 		P_now_ = F_ * P_pre_ * F_.transpose() + Q_;
-	
-		// 4. update the old value
-		//x_pre = x_now;
-		//P_pre = P_now;
-#ifdef DEBUG
-		std::cout<<" prediction end "<<std::endl;
-#endif
 	}	
 
 	void update( const DataType z ) // measurement value : delta_theta
 	{
-		if ( is_init_ == false ) {
-                        return;
-        	}
 
 #ifdef DEBUG
         	std::cout<<" update "<<std::endl;
@@ -90,7 +75,6 @@ public:
 		DataType K_tmp = H_ * P_now_ * H_.transpose() + R_;
 		Matrix3x1 K = P_now_ * H_.transpose() * ( 1 / K_tmp );
 
-		//std::cout<<"K * error = "<<std::endl<<K * error<<std::endl;
 		// 4. state update
 		x_now_ += K * error;
 		
@@ -98,7 +82,7 @@ public:
 		P_now_ = ( Matrix3::Identity() - K * H_ ) * P_now_;
 
 		// 6. angle normalize
-		angleNormalize( x_now_[2] );
+		Utils::angleNormalize( x_now_[2] );
 	
 		// 8. update the old value
                 x_pre_ = x_now_;
@@ -107,9 +91,6 @@ public:
  
 	void update( const Vector3& z )
 	{
-		if ( is_init_ == false ) {
-                        return;
-                }
 	
 		// 1. measurement estimate
 		auto h = H_cam_ * x_now_;
@@ -163,18 +144,6 @@ public:
 		return P_now_;
 	}
 	
-private:
-	void angleNormalize( DataType& angle )
-        {
-                if( angle >= M_PI ) {
-                        angle -= 2 * M_PI;
-                }
-
-                if( angle <= -M_PI ){
-                        angle += 2 * M_PI;
-                }
-        }
-
 	
 private:
 	// state vector at k-1 moment, ( x, y, theta )
@@ -202,14 +171,8 @@ private:
 	// measurement Gaussian Noise
 	DataType R_ = 10;
 	
-	// added : 
+	// added : measurement Gaussian Noise by camera aruco detection
 	Matrix3 R_cam_ = Matrix3::Identity();
-
-	// previous time moment
-	DataType time_pre_ = 0;
-	
-	// is init flag
-	bool is_init_ = false;
 
 };
 

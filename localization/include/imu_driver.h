@@ -52,7 +52,6 @@ public:
 
 	void calibration()
 	{
-		std::cout<<"------------------- START IMU CALIBRATION -------------------"<<std::endl;
 		int offset_cnt = 0;
 
 		while ( offset_cnt < 1000 ) {
@@ -79,8 +78,7 @@ public:
                 gyro_z_offset_ = gyro_z_offset_ / static_cast<value_type>( offset_cnt );
 
                 acc_z_offset_ -= 9.79362;
-		
-		std::cout<<"----------------------- END CALIBRATION --------------------"<<std::endl;
+
 	}
 
 	void getImuData( sensor::ImuData<value_type>& imu_data )

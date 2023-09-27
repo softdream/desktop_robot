@@ -159,8 +159,8 @@ public:
 		//wiringPiSetupGpio();
 
 		// PID 
-		l_pid_ = new pid::PID<value_type>( 0.05, 1000, -1000, 7, 0.4, 0 );
-		r_pid_ = new pid::PID<value_type>( 0.05, 1000, -1000, 7, 0.4, 0 );
+		l_pid_ = new pid::PID<value_type>( 0.05, 255, -255, 7, 0.4, 0 );
+		r_pid_ = new pid::PID<value_type>( 0.05, 255, -255, 7, 0.4, 0 );
 	}
 
 	~Motor()
