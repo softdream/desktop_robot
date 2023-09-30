@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 3.16 )
 
-PROJECT( localize_test )
+PROJECT( motor_test )
 
 SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17" )
 
@@ -28,12 +28,18 @@ LINK_DIRECTORIES( ${OpenCV_LIBRARIES_DIRS} )
 INCLUDE_DIRECTORIES(
         ${CMAKE_SOURCE_DIR}
         ${CMAKE_SOURCE_DIR}/include/
+	${CMAKE_SOURCE_DIR}/include/gs2_include/
 )
+
+# lib directories of gs2 lidar
+LINK_DIRECTORIES( ${CMAKE_SOURCE_DIR}/lib/ )
+
 
 #ADD_DEFINITIONS( -lwiringPi )
 
 ADD_EXECUTABLE( ${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/main.cpp )
 
-TARGET_LINK_LIBRARIES( ${PROJECT_NAME} wiringPi pthread )
+TARGET_LINK_LIBRARIES( ${PROJECT_NAME} wiringPi ydlidar_driver.a pthread )
 
 TARGET_LINK_LIBRARIES( ${PROJECT_NAME} ${OpenCV_LIBS} )
+

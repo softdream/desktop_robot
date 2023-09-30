@@ -93,10 +93,11 @@ public:
 		// pid control
 		value_type l_out = l_pid_->caculate( required_l_rpm_, l_rpm );
 		value_type r_out = r_pid_->caculate( required_r_rpm_, r_rpm );
-		std::cout<<"l_out = "<<l_out<<", r_out = "<<r_out<<std::endl;
+		//std::cout<<"l_out = "<<l_out<<", r_out = "<<r_out<<std::endl;
 
 		// set the motor pwm
-		setPwm( static_cast<int>( l_out ), static_cast<int>( r_out ) );
+		//setPwm( static_cast<int>( l_out ), static_cast<int>( r_out ) );
+		setPwm( 0, 0 );
 
 		// get the motor data
 		return sensor::MotorData<value_type>( l_rpm, r_rpm, velocity, delta_s, delta_angle );
@@ -132,8 +133,8 @@ public:
 		//wiringPiSetupGpio();
 
 		// PID 
-		l_pid_ = new pid::PID<value_type>( 0.05, 255, -255, 7, 0.4, 0 );
-		r_pid_ = new pid::PID<value_type>( 0.05, 255, -255, 7, 0.4, 0 );
+		l_pid_ = new pid::PID<value_type>( 0.05, 255, -255, 7, 0.04, 0.01 );
+		r_pid_ = new pid::PID<value_type>( 0.05, 255, -255, 7, 0.04, 0.01 );
 	}
 
 	~Motor()

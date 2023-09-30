@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <string.h>
 #include <vector>
 
 namespace transport
@@ -147,17 +148,17 @@ public:
                 }
         }
 
-	template<typename T>
-	void send( const T& data )
-	{
-		return this->write( (char*)&data, sizeof( data ) );
-	}
+        template<typename T>
+        int send( const T& data )
+        {
+                return this->write( (char*)&data, sizeof( data ) );
+        }
 
-	template<typename T>
-	void send( const std::vector<T>& vec ) 
-	{
-		return this->write( (char*)vec.data(), vec.size() * sizeof( T ) );
-	}
+        template<typename T>
+        int send( const std::vector<T>& vec )
+        {
+                return this->write( (char*)vec.data(), vec.size() * sizeof( T ) );
+        }
 };
 
 }

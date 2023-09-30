@@ -1,11 +1,5 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 3.16 )
 
-# Set a default build type if none was specified
-#IF( NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES )
-#	MESSAGE( "Setting build type to 'Release' as none was specified ." )
-#	SET( CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build ." FORCE )
-#	SET_PROPERTY( CACHE CMAKE_BUILD_TYPE PROPERTY STRING "DEBUG" "RELEASE" "MinSizeRel" "relWithDebInfo" )
-#ENDIF()
 
 PROJECT( lidar_test )
 

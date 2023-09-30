@@ -7,14 +7,12 @@
 #include "ekf_fusion.h"
 #include "motor.h"
 #include "event_manage.h"
-//#include "observation.h"
-//#include "lidar_driver.h"
+#include "observation.h"
+#include "lidar_driver.h"
 
 
 #include <thread>
-#include <fstream>
 
-#define FILE_RECORD
 
 namespace chassis
 {
@@ -36,20 +34,11 @@ public:
 		
 	Localize()
 	{
-#ifdef FILE_RECORD
-		pose_out_.open( "data_record.txt", std::ios::out );
-		if ( !pose_out_.is_open() ) {
-			std::cerr<<"Cannont Open the file !"<<std::endl;
-		}
-#endif
+	
 	}
 
 	~Localize()
 	{
-#ifdef FILE_RECORD
-		pose_out_.close();
-#endif
-
 		if ( udp_serv_ != nullptr ) delete udp_serv_;
 	}
 
@@ -75,8 +64,6 @@ private:
 	{
 		if ( !init() ) return;
 
-		std::cout<<"-------------------- START LOCALIZATIOn --------------------"<<std::endl;
-
 		while ( 1 ) {
 			event_instance_.dispatcher();
 		}
@@ -85,13 +72,12 @@ private:
 	bool init()
 	{
 		// 1. instance of the Receiver
-		udp_serv_ = new transport::Receiver<10>( 2333 );
+		udp_serv_ = new transport::Receiver<50>( 2333 );
 
 		// 2. imu init & calibration
 		if ( !imu_.init() ) return false;
-		//imu_.calibration();
-		imu_.calibrateGryoZ();
-
+		imu_.calibration();
+	
 		// 3. motor & encoder init
 		motor_.initMotors();
 		motor_.initEncoders();
@@ -116,7 +102,7 @@ private:
 private:
 	void timerCallback( int fd, void* arg )
 	{
-		//std::cout<<"timer callback ..."<<std::endl;
+		std::cout<<"timer callback ..."<<std::endl;
 
 		// 1. timer handle
 		auto ret = timer_.handleRead();
@@ -124,22 +110,14 @@ private:
 		// 2. motor control
 		motor_.motorControl( motor_data_ );
 
-		std::cout<<"detal angle = "<<motor_data_.delta_angle<<std::endl;
-
 		// 3. get imu data
-		//imu_.getImuData( imu_data_ );
-		value_type gz; // imu measurement
-		imu_.getGyroZ( gz );
-		gz = -gz;
-		std::cout<<"gz = "<<gz<<std::endl;
-		
-#ifdef FILE_RECORD
-		pose_out_ << motor_data_.delta_s<<" "<<motor_data_.delta_angle<<" "<<motor_data_.r_rpm<<" "<<motor_data_.l_rpm<<" "<<gz<<std::endl;
-#endif
+		imu_.getImuData( imu_data_ );
 
 		// 4. ekf fusion
+		value_type gz = -imu_data_.gyro_z;
+
 		if ( motor_data_.r_rpm == 0 || motor_data_.l_rpm == 0 ) gz = 0.0;
-		
+
 		if ( !is_init_ ) {
 			pre_gz = gz;	
 			is_init_ = true;
@@ -155,21 +133,9 @@ private:
 
 		// update the robot pose
 		robot_pose_ = odom_ekf_.getStateX();
-		std::cout<<"pose : ( "<<robot_pose_.transpose()<<" )"<<std::endl;
 
 		// 4.3 update the old value
 		pre_gz = gz;
-	
-		// 4.4 is key pose ?
-		if ( poseDiffLargerThan( robot_pose_, last_key_pose_ ) ) {
-			//last_key_pose_ = robot_pose_;
-			sensor::Pose2D<value_type> pose( robot_pose_[0], robot_pose_[1], robot_pose_[2] );
-			udp_serv_->send( pose );
-
-#ifdef FILE_RECORD
-			//pose_out_ << robot_pose_[0]<<" "<<robot_pose_[1]<<" "<<robot_pose_[2]<<std::endl;
-#endif
-		}
 	}
 
 	void recverCallback( int fd, void* arg )
@@ -181,33 +147,23 @@ private:
 	
 		switch ( command ) {
 			case 0x01 : { // forwad
-				motor_.cacuRPM( 0.05f, 0.0f );
+				motor_.cacuRPM( 0.01f, 0.0f );
 				break;				
 			}
 			case 0x02 : { // turn left
-				motor_.cacuRPM( 0.0f, 1.5f );
+				motor_.cacuRPM( 0.0f, 0.1f );
 				break;
 			}
-			case 0x03 : { // turn left
-                                motor_.cacuRPM( 0.0f, -1.5f );
+			case 0x02 : { // turn left
+                                motor_.cacuRPM( 0.0f, -0.1f );
                                 break;
                         }	  
-			case 0x04 : { // stop
+			case 0x03 : {
 				motor_.cacuRPM( 0.0f, 0.0f );	    
 			}  
 			default : break;
 		}
 	}
-
-	bool poseDiffLargerThan( const Vector3& pose_now, const Vector3& pose_pre )
-	{
-		auto pose_diff = pose_now - pose_pre;
-		if ( pose_diff.head( 2 ).norm() >= min_dist_diff_ ) return true;
-
-		if ( std::abs( pose_diff[2] ) >= min_angle_diff_ ) return true;
-
-		return false;
-	}	
 
 private:
 	// devices
@@ -225,7 +181,7 @@ private:
 
 	// motor data & imu data
 	sensor::MotorData<value_type> motor_data_;
-	//sensor::ImuData<value_type> imu_data_;
+	sensor::ImuData<value_type> imu_data_;
 
 	// ekf 
 	ekf::EKF<value_type> odom_ekf_;
@@ -238,17 +194,6 @@ private:
 	
 	// robot pose
 	Vector3 robot_pose_ = Vector3::Zero();
-	Vector3 last_key_pose_ = Vector3::Zero();
-
-	// 
-	constexpr static value_type min_dist_diff_ = 0.03;
-	constexpr static value_type min_angle_diff_ = 0.03490658;
-
-	
-	// file storage
-#ifdef FILE_RECORD
-	std::ofstream pose_out_;
-#endif
 };	
 
 }

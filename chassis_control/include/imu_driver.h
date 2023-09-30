@@ -79,7 +79,14 @@ public:
                 gyro_z_offset_ = gyro_z_offset_ / static_cast<value_type>( offset_cnt );
 
                 acc_z_offset_ -= 9.79362;
-		
+	
+		std::cout<<"acc_x_offset_ = "<<acc_x_offset_<<std::endl;
+		std::cout<<"acc_y_offset_ = "<<acc_y_offset_<<std::endl;
+		std::cout<<"acc_y_offset_ = "<<acc_y_offset_<<std::endl;
+		std::cout<<"gyro_x_offset_ = "<<gyro_x_offset_<<std::endl;
+		std::cout<<"gyro_y_offset_ = "<<gyro_y_offset_<<std::endl;
+		std::cout<<"gyro_z_offset_ = "<<gyro_z_offset_<<std::endl;
+
 		std::cout<<"----------------------- END CALIBRATION --------------------"<<std::endl;
 	}
 

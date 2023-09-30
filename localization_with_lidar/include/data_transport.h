@@ -10,7 +10,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include <string.h>
+#include <vector>
 
 namespace transport
 {
@@ -134,6 +134,29 @@ public:
 		else {
 			return false;
 		}
+	}
+
+	bool receive( std::string& data )
+        {
+                if ( this->read() ) {
+                        data = this->recv_buffer_;
+                        return true;
+                }
+                else {
+                        return false;
+                }
+        }
+
+	template<typename T>
+	void send( const T& data )
+	{
+		return this->write( (char*)&data, sizeof( data ) );
+	}
+
+	template<typename T>
+	void send( const std::vector<T>& vec ) 
+	{
+		return this->write( (char*)vec.data(), vec.size() * sizeof( T ) );
 	}
 };
 

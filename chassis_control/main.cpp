@@ -26,13 +26,34 @@ void recverCallback( int fd, void* arg )
 {
 	std::cout<<"recver callback ..."<<std::endl;
 
-	//recver.receive(  );
+	int command = 0;
+        recver.receive( command );
+
+        switch ( command ) {
+        	case 0x01 : { // forwad
+                        motor_instance.cacuRPM( 0.05f, 0.0f );
+                        break;
+                }
+                case 0x02 : { // turn left
+                        motor_instance.cacuRPM( 0.0f, 1.5f );
+                        break;
+                }
+                case 0x03 : { // turn left
+                        motor_instance.cacuRPM( 0.0f, -1.5f );
+                        break;
+                }
+		case 0x04 : { // stop
+                        motor_instance.cacuRPM( 0.0f, 0.0f );
+                        break;
+                }
+                default : break;
+	}
 }
 
 // timer callback function
 void timerCallback( int fd, void* arg )
 {
-        std::cout<<"timer callback ..."<<std::endl;
+       // std::cout<<"timer callback ..."<<std::endl;
 
 	// 1. timer handle
         auto ret = timer_instance.handleRead();
@@ -41,7 +62,7 @@ void timerCallback( int fd, void* arg )
 	motor_instance.motorControl( motor_data );
 
 	// 3. get imu data
-	mpu_6050.getImuData( imu_data );
+//	mpu_6050.getImuData( imu_data );
 }
 
 
@@ -76,8 +97,10 @@ void chassisControlThread()
 int main()
 {
 	std::cout<<"------------------------ MOTOR TEST -------------------------"<<std::endl;
-	mpu_6050.init();
-	mpu_6050.calibration();
+	//mpu_6050.init();
+	//mpu_6050.calibration();
+
+	chassisControlThread();
 
 	return 0;
 }

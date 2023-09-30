@@ -5,9 +5,9 @@
 #include <cmath>
 #include <type_traits>
 
-//#include "CYdLidar.h"
-//#include "scan_container.h"
-//#include <opencv2/opencv.hpp>
+#include "CYdLidar.h"
+#include "scan_container.h"
+#include <opencv2/opencv.hpp>
 
 
 #define WIDTH 600
@@ -34,7 +34,7 @@ public:
                 }
 	}
 
-/*	template<typename T>
+	template<typename T>
         static 
 	typename std::enable_if_t<std::is_same_v<T, float> | std::is_same_v<T, double>>
 	laserScan2Container( const LaserScan& scan, sensor::ScanContainer<T>& container )
@@ -78,7 +78,7 @@ public:
                 cv::imshow( "scan", image );
                 cv::waitKey(5);
         }
-*/
+
 };
 
 #endif

@@ -78,43 +78,7 @@ using MotorDataI = MotorData<int>;
 using MotorDataF = MotorData<float>;
 using MotorDataD = MotorData<double>;
 
-// -------------------------------- 2. MOTOR ------------------------------------ //
-template<typename T>
-struct Pose2D_
-{
-	using value_type = T;
-	
-	Pose2D_()
-	{
-	
-	}
-	
-	~Pose2D_()
-	{
-	
-	}
-
-	Pose2D_( const value_type x_, const value_type y_, value_type theta_ )
-		: x( x_ ), y( y_ ), theta( theta_ )
-	{
-	
-	}
-
-	value_type x = 0.0;
-	value_type y = 0.0;
-	value_type theta = 0.0;
-};
-
-template<typename T>
-using Pose2D = Pose2D_<T>;
-
-using Pose2DI = Pose2D<int>;
-using Pose2DF = Pose2D<float>;
-using Pose2DD = Pose2D<double>;
-
-}
-
-// -------------------------------- 2. MOTOR ------------------------------------ //
+// ------------------------------------ LIDAR ------------------------------- //
 template<typename T>
 struct LaserPoint_
 {
@@ -159,5 +123,8 @@ using LidarScan = LidarScan_<T, 150>;
 using LidarScanI = LidarScan<int>;
 using LidarScanF = LidarScan<float>;
 using LidarScanD = LidarScan<double>;
+
+
+}
 
 #endif
