@@ -162,7 +162,7 @@ private:
 	
 		// 4.4 is key pose ?
 		if ( poseDiffLargerThan( robot_pose_, last_key_pose_ ) ) {
-			//last_key_pose_ = robot_pose_;
+			last_key_pose_ = robot_pose_;
 			sensor::Pose2D<value_type> pose( robot_pose_[0], robot_pose_[1], robot_pose_[2] );
 			udp_serv_->send( pose );
 

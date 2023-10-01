@@ -79,6 +79,17 @@ public:
 		return ::sendto( sock_fd_, data, len, 0, ( struct sockaddr* )&client_addr_, client_sock_len_ );
 	}
 
+	const int write( const char* data, const int len, const std::string ip, const int port )
+	{
+		struct sockaddr_in client_addr;
+
+                client_addr.sin_family = AF_INET;
+                client_addr.sin_addr.s_addr = inet_addr( ip.c_str() );
+                client_addr.sin_port = htons( port );
+
+		return ::sendto( sock_fd_, data, len, 0, ( struct sockaddr* )&client_addr, sizeof( client_addr ) );
+	}
+
 	bool setNonBlock()
 	{
 		int flag = ::fcntl( sock_fd_, F_GETFL, 0 );
@@ -159,6 +170,12 @@ public:
         {
                 return this->write( (char*)vec.data(), vec.size() * sizeof( T ) );
         }
+
+	template<typename T>
+	int send( const T& data, const std::string ip, const int port)
+	{
+		return this->write( (char*)&data, sizeof( data ), ip, port );
+	}
 };
 
 }
