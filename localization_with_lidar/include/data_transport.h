@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <string.h>
 #include <vector>
 
 namespace transport
@@ -76,6 +77,17 @@ public:
 	const int write( const char* data, const int len )
 	{
 		return ::sendto( sock_fd_, data, len, 0, ( struct sockaddr* )&client_addr_, client_sock_len_ );
+	}
+
+	const int write( const char* data, const int len, const std::string ip, const int port )
+	{
+		struct sockaddr_in client_addr;
+
+                client_addr.sin_family = AF_INET;
+                client_addr.sin_addr.s_addr = inet_addr( ip.c_str() );
+                client_addr.sin_port = htons( port );
+
+		return ::sendto( sock_fd_, data, len, 0, ( struct sockaddr* )&client_addr, sizeof( client_addr ) );
 	}
 
 	bool setNonBlock()
@@ -147,16 +159,22 @@ public:
                 }
         }
 
-	template<typename T>
-	void send( const T& data )
-	{
-		return this->write( (char*)&data, sizeof( data ) );
-	}
+        template<typename T>
+        int send( const T& data )
+        {
+                return this->write( (char*)&data, sizeof( data ) );
+        }
+
+        template<typename T>
+        int send( const std::vector<T>& vec )
+        {
+                return this->write( (char*)vec.data(), vec.size() * sizeof( T ) );
+        }
 
 	template<typename T>
-	void send( const std::vector<T>& vec ) 
+	int send( const T& data, const std::string ip, const int port)
 	{
-		return this->write( (char*)vec.data(), vec.size() * sizeof( T ) );
+		return this->write( (char*)&data, sizeof( data ), ip, port );
 	}
 };
 

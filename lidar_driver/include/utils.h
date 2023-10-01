@@ -22,8 +22,8 @@ class Utils
 public:
 	template<typename T>
 	static 
-	//typename std::enable_if_t<std::is_same_v<T, float> | std::is_same_v<T, double>>
-	void angleNormalize( T& angle )
+	typename std::enable_if_t<std::is_same_v<T, float> | std::is_same_v<T, double>>
+	angleNormalize( T& angle )
 	{
 		if( angle >= M_PI ) {
                         angle -= 2 * M_PI;
@@ -34,13 +34,12 @@ public:
                 }
 	}
 
-	//template<typename T>
-        //static
-        //typename std::enable_if_t<std::is_same_v<T, float> | std::is_same_v<T, double>, Eigen::Matrix<T, 2, 1>>
-        //pointLaser2World( const Eigen::Matrix<T, 2, 1>& pt_laser, const Eigen::Matrix<T, 3, 1>& robot_pose_world )
-        static Eigen::Vector2f pointLaser2World( const Eigen::Vector2f& pt_laser, const Eigen::Vector3f& robot_pose_world )
+	template<typename T>
+        static
+        typename std::enable_if_t<std::is_same_v<T, float> | std::is_same_v<T, double>, Eigen::Matrix<T, 2, 1>>
+        pointLaser2World( const Eigen::Matrix<T, 2, 1>& pt_laser, const Eigen::Matrix<T, 3, 1>& robot_pose_world )
 	{
-                Eigen::Matrix<float, 2, 2> rotate;
+                Eigen::Matrix<T, 2, 2> rotate;
                 rotate << ::cos( robot_pose_world[2] ), -::sin( robot_pose_world[2] ),
                           ::sin( robot_pose_world[2] ),  ::cos( robot_pose_world[2] );
 
@@ -48,15 +47,15 @@ public:
         }
 
 
-	//template<typename T>
-        //static 
-	//typename std::enable_if_t<std::is_same_v<T, float> | std::is_same_v<T, double>>
-	static void laserScan2Container( const LaserScan& scan, sensor::ScanContainerF& container )
+	template<typename T>
+        static 
+	typename std::enable_if_t<std::is_same_v<T, float> | std::is_same_v<T, double>>
+	laserScan2Container( const LaserScan& scan, sensor::ScanContainer<T>& container )
         {
                 container.clear();
 
                 for ( int i = 0; i < scan.points.size(); i ++ ) {
-                        auto dist = scan.points[i].range * 0.001;
+                        auto dist = static_cast<T>( scan.points[i].range ) * 0.001;
 
                         // judgement
                         if ( dist > 0.03 && dist < 0.3 ) {
@@ -67,21 +66,21 @@ public:
                                 auto pt_x = dist * ::cos( theta );
                                 auto pt_y = dist * ::sin( theta );
 
-                                container.add( Eigen::Vector2f( pt_x, pt_y ) );
+                                container.add( typename sensor::ScanContainer<T>::type( pt_x, pt_y ) );
                         }
                 }
         }
 
 
-	//template<typename T>
-        //static
-        //typename std::enable_if_t<std::is_same_v<T, float> | std::is_same_v<T, double>>
-        static void laserScan2Container( const LaserScan& scan, sensor::ScanContainerF& container, const Eigen::Vector3f& robot_pose_world )
+	template<typename T>
+        static
+        typename std::enable_if_t<std::is_same_v<T, float> | std::is_same_v<T, double>>
+        laserScan2Container( const LaserScan& scan, sensor::ScanContainer<T>& container, const Eigen::Matrix<T, 3, 1>& robot_pose_world )
         {
                 container.clear();
 
                 for ( int i = 0; i < scan.points.size(); i ++ ) {
-                        auto dist = scan.points[i].range * 0.001;
+                        auto dist = static_cast<T>( scan.points[i].range ) * 0.001;
 
                         // judgement
                         if ( dist > 0.03 && dist < 0.3 ) {
@@ -89,8 +88,8 @@ public:
 
                                 angleNormalize( theta );
 
-				Eigen::Vector2f pt_laser( dist * ::cos( theta ), dist * ::sin( theta ) );
-				Eigen::Vector2f pt_world = pointLaser2World( pt_laser, robot_pose_world );
+				Eigen::Matrix<T, 2, 1> pt_laser( dist * ::cos( theta ), dist * ::sin( theta ) );
+				Eigen::Matrix<T, 2, 1> pt_world = pointLaser2World( pt_laser, robot_pose_world );
 
                                 container.add( pt_world );
                         }

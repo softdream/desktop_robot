@@ -97,6 +97,7 @@ public:
 
 		// set the motor pwm
 		setPwm( static_cast<int>( l_out ), static_cast<int>( r_out ) );
+		//setPwm( rpm2Pwm( l_out ), rpm2Pwm( r_out ) );
 
 		// get the motor data
 		return sensor::MotorData<value_type>( l_rpm, r_rpm, velocity, delta_s, delta_angle );
@@ -108,7 +109,7 @@ public:
                 value_type l_rpm = 60 * static_cast<value_type>( l_enc_cnt ) / ( pulse_number_ * 0.05 );
                 value_type r_rpm = -60 * static_cast<value_type>( r_enc_cnt ) / ( pulse_number_ * 0.05 );
 
-                std::cout<<"l_rpm = "<<l_rpm<<", r_rpm = "<<r_rpm<<std::endl;
+                //std::cout<<"l_rpm = "<<l_rpm<<", r_rpm = "<<r_rpm<<std::endl;
 
 		motor_data.l_rpm = l_rpm;
 		motor_data.r_rpm = r_rpm;
@@ -123,11 +124,11 @@ public:
                 // pid control
                 value_type l_out = l_pid_->caculate( required_l_rpm_, l_rpm );
                 value_type r_out = r_pid_->caculate( required_r_rpm_, r_rpm );
-                std::cout<<"l_out = "<<l_out<<", r_out = "<<r_out<<std::endl;
+                //std::cout<<"l_out = "<<l_out<<", r_out = "<<r_out<<std::endl;
 
                 // set the motor pwm
-                setPwm( static_cast<int>( l_out ), static_cast<int>( r_out ) );
-        }
+        	setPwm( rpm2Pwm( l_out ), rpm2Pwm( r_out ) );
+	}
 
 	template<typename U>
 	static void cacuRPM( const U v, const U w )
@@ -147,6 +148,9 @@ public:
 		// 4. get the required rpm
 		required_l_rpm_ = static_cast<value_type>( x_rpm - tan_rpm * 0.5 );
 		required_r_rpm_ = static_cast<value_type>( x_rpm + tan_rpm * 0.5 );
+		
+		std::cout<<"required left rpm = "<<required_l_rpm_<<std::endl;
+		std::cout<<"required right rpm = "<<required_r_rpm_<<std::endl;
 	}
 
 public:
@@ -159,8 +163,8 @@ public:
 		//wiringPiSetupGpio();
 
 		// PID 
-		l_pid_ = new pid::PID<value_type>( 0.05, 1000, -1000, 7, 0.4, 0 );
-		r_pid_ = new pid::PID<value_type>( 0.05, 1000, -1000, 7, 0.4, 0 );
+		l_pid_ = new pid::PID<value_type>( 0.05, 800, -800, 1, 0.04, 0.01 );
+		r_pid_ = new pid::PID<value_type>( 0.05, 800, -800, 1, 0.04, 0.01 );
 	}
 
 	~Motor()
@@ -173,6 +177,11 @@ public:
 	}
 
 private:
+	const int rpm2Pwm( const value_type rpm )
+	{
+		return ( rpm / max_rpm_ ) * 1000;
+	}
+
 	static void leftEncoderCallback()
 	{
 		// 1. LA : high && LB : low
@@ -236,26 +245,26 @@ private:
         {
                 // left motor
                 if ( l_motor_pwm >= 0 ) {
-                        digitalWrite( AIN1, LOW );
-                        digitalWrite( AIN2, HIGH );
-                        pwmWrite( PWMA, l_motor_pwm );
-                }
-                else {
                         digitalWrite( AIN1, HIGH );
                         digitalWrite( AIN2, LOW );
-                        pwmWrite( PWMA, l_motor_pwm );
+                        pwmWrite( PWMA, std::abs( l_motor_pwm ) );
+                }
+                else {
+                        digitalWrite( AIN1, LOW );
+                        digitalWrite( AIN2, HIGH );
+                        pwmWrite( PWMA, std::abs( l_motor_pwm ) );
                 }
 
                 // right motor
                 if ( r_motor_pwm >= 0 ) {
-                        digitalWrite( BIN1, LOW );
-                        digitalWrite( BIN2, HIGH );
-                        pwmWrite( PWMB, r_motor_pwm );
-                }
-                else {
                         digitalWrite( BIN1, HIGH );
                         digitalWrite( BIN2, LOW );
-                        pwmWrite( PWMB, r_motor_pwm );
+                        pwmWrite( PWMB, std::abs( r_motor_pwm ) );
+                }
+                else {
+                        digitalWrite( BIN1, LOW );
+                        digitalWrite( BIN2, HIGH );
+                        pwmWrite( PWMB, std::abs( r_motor_pwm ) );
                 }
         }
 
@@ -273,6 +282,7 @@ private:
 	constexpr static value_type circumference_ = 0.084823;
 	constexpr static value_type pulse_number_ = 2100;
 	constexpr static value_type base_width_ = 0.052;
+	constexpr static value_type max_rpm_ = 50;
 };
 
 template<typename T>
@@ -286,6 +296,7 @@ long Motor<T>::l_enc_cnt = 0;
 
 template<typename T>
 long Motor<T>::r_enc_cnt = 0;
+
 
 using MotorF = Motor<float>;
 using MotorD = Motor<double>;

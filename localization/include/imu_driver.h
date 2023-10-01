@@ -156,6 +156,7 @@ public:
 		gyro_z -= gyro_z_offset_;
 	}
 
+
 	void calibrateGryoZ()
 	{
 		std::cout<<"------------------- START CALIBRATE GYRO Z -------------------"<<std::endl;

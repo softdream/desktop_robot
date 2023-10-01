@@ -46,8 +46,10 @@ public:
 
 		// 3. integral
 		integral_ += error;
-		if ( target == 0 && error == 0 ) integral_ = 0;
+		if ( target == 0 || error == 0 ) integral_ = 0;
 		value_type i_out = ki_ * integral_;
+	
+		//std::cout<<"intergal = "<<integral_<<std::endl;
 
 		// 4. derivative
 		value_type deriv = error - pre_error_;

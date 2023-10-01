@@ -1,14 +1,12 @@
 #include "localize.h"
 
-// -------------------------------- GLOBAL DATA ------------------------------ //
-chassis::Localize<float> localize_instance;
-
-// --------------------------------------------------------------------------- //
-
 
 int main()
 {
-	std::cout<<"------------------------ MOTOR TEST -------------------------"<<std::endl;
+	std::cout<<"------------------------ LOCALIZATION TEST -------------------------"<<std::endl;
+
+	chassis::Localize<float> localize_instance;
+	localize_instance.run();
 
 	return 0;
 }

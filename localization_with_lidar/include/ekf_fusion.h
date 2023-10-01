@@ -46,7 +46,7 @@ public:
 		x_now_(2) = x_pre_(2) + u_now(1); // theta
 
 		// added
-		Utils::angleNormalize( x_now_[2] );
+		//Utils::angleNormalize( x_now_[2] );
 
 		// 2. caculate state Jacobian matrix	
 		F_ = Matrix3::Identity();
@@ -55,6 +55,10 @@ public:
 	
 		// 3. state covarince prediction
 		P_now_ = F_ * P_pre_ * F_.transpose() + Q_;
+	
+		// testing
+		//x_pre_ = x_now_;
+                //P_pre_ = P_now_;
 	}	
 
 	void update( const DataType z ) // measurement value : delta_theta

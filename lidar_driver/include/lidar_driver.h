@@ -11,22 +11,26 @@ namespace lidar
 
 using namespace ydlidar;
 
-using CallBackRef = std::function<void( const LaserScan& )>;
+template<typename T>
+using CallBackRef = std::function<void( const T& )>;
 
 class Lidar
 {
 public:
 	Lidar()
 	{
-
+		if ( !init() ) {
+			std::cerr<<"Cannot Open Lidar Device !"<<std::endl;
+		}
 	}
 
 	~Lidar()
 	{
-
+		release();
 	}
 
-	void spin( const CallBackRef cb )
+	template<typename T>
+	void spin( const CallBackRef<T>& cb )
 	{
 		while ( ret_ && ydlidar::ok() ) {
 			bool hard_error = false;
@@ -35,6 +39,11 @@ public:
 
 			if ( laser_ptr_->doProcessSimple( scan_src, hard_error ) ) {
 				std::cout<<"scan received : stamp = "<<scan_src.stamp<<", points_num = "<<scan_src.points.size()<<", frequency = "<<1.0 / scan_src.config.scan_time<<std::endl;
+					
+				//for ( int i = 0; i < 100; i ++ ) {
+	        	        //        std::cout<<"( "<<scan_src.points.at(i).range<<", "<<scan_src.points.at(i).angle * 180.0 / M_PI<<" ) ";
+        		        //}
+		                std::cout<<std::endl;
 
 				// callback function
 				cb( scan_src );
@@ -44,6 +53,20 @@ public:
 			}
 		}
 	}
+
+private:
+	/*template<typename T>
+	void laserScanTypeConvert( const LaserScan& scan_src, T& scan_dst )
+	{
+		scan_dst.stamp = scan_src.stamp;
+
+		for ( int i = 0; i < scan_dst.size(); i ++ ) {
+			scan_dst.points[i].angle = static_cast<typename T::value_type>( scan_src.points.at(i).angle );
+			scan_dst.points[i].range = static_cast<typename T::value_type>( scan_src.points.at(i).range );
+			scan_dst.points[i].intensity = static_cast<typename T::value_type>( scan_src.points.at(i).intensity );
+		}
+	}*/
+
 
 	bool init()
 	{
