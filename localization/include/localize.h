@@ -7,11 +7,8 @@
 #include "ekf_fusion.h"
 #include "motor.h"
 #include "event_manage.h"
-//#include "observation.h"
-//#include "lidar_driver.h"
 
 
-#include <thread>
 #include <fstream>
 
 #define FILE_RECORD
@@ -55,32 +52,17 @@ public:
 
 	void run()
 	{
-		// 1. localization thread
-		std::thread localize_thread( std::bind( &Localize::localizationThread, this ) );
-		
-		// 2. camera aruco localization thread
-		
-		
-		localize_thread.join();
-	}
-
-private:
-	void visionUpdateThread()
-	{
-		
-	}
-
-private:
-	void localizationThread()
-	{
 		if ( !init() ) return;
 
-		std::cout<<"-------------------- START LOCALIZATIOn --------------------"<<std::endl;
+                std::cout<<"-------------------- START LOCALIZATIOn --------------------"<<std::endl;
 
-		while ( 1 ) {
-			event_instance_.dispatcher();
-		}
+                while ( 1 ) {
+                        event_instance_.dispatcher();
+                }
 	}
+
+
+private:
 
 	bool init()
 	{
