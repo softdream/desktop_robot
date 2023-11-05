@@ -316,6 +316,10 @@ private:
 					motor_.cacuRPM( 0.0f, 0.0f ); // stop
 			    		break;		
 				}	
+				case 0x05 : {
+					motor_.cacuRPM( -0.05f, 0.0f ); // back
+					break;	    
+				}
 	    			default : break;				    
 			}
 		}
