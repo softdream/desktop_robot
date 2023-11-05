@@ -8,12 +8,12 @@ sensor::ScanContainerF container;
 
 void lidarCallback( const LaserScan& scan )
 {
-	std::cout<<"lidar data call back ..."<<std::endl;
+	//std::cout<<"lidar data call back ..."<<std::endl;
 
 	Utils::laserScan2Container( scan, container );
 	std::cout<<"scan container size = "<<container.size()<<std::endl;
 
-	//Utils::displayOneFrameScan( container );
+	Utils::displayOneFrameScan( container );
 }
 
 

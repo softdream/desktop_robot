@@ -38,12 +38,12 @@ public:
 			LaserScan scan_src;
 
 			if ( laser_ptr_->doProcessSimple( scan_src, hard_error ) ) {
-				std::cout<<"scan received : stamp = "<<scan_src.stamp<<", points_num = "<<scan_src.points.size()<<", frequency = "<<1.0 / scan_src.config.scan_time<<std::endl;
+				//std::cout<<"scan received : stamp = "<<scan_src.stamp<<", points_num = "<<scan_src.points.size()<<", frequency = "<<1.0 / scan_src.config.scan_time<<std::endl;
 					
 				//for ( int i = 0; i < 100; i ++ ) {
 	        	        //        std::cout<<"( "<<scan_src.points.at(i).range<<", "<<scan_src.points.at(i).angle * 180.0 / M_PI<<" ) ";
         		        //}
-		                std::cout<<std::endl;
+		                //std::cout<<std::endl;
 
 				// callback function
 				cb( scan_src );
@@ -51,6 +51,7 @@ public:
 			else {
 				std::cerr<<"Failed to get lidar data !"<<std::endl;
 			}
+			//usleep( 2000000 );
 		}
 	}
 
@@ -126,7 +127,7 @@ private:
 	const std::string port_ = "/dev/ttyAMA0";
 	int baudrate_ = 921600;
 
-	float frequency_ = 8.0;
+	float frequency_ = 5.0;
 
 	std::vector<float> ignore_array_;
 

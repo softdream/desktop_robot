@@ -13,6 +13,8 @@
 #include <string.h>
 #include <vector>
 
+#include <iostream>
+
 namespace transport
 {
 
@@ -148,6 +150,97 @@ public:
 	{
 		return this->write( (char*)&data, sizeof( data ), ip, port );
 	}
+
+	template<typename T>
+	int send( const T& data, const char header, const std::string ip, const int port )
+	{
+		char buffer[sizeof( data ) + 1] = {0};
+		buffer[0] = header;
+		memcpy( &buffer[1], &data, sizeof( data ) );
+		return this->write( buffer, sizeof( data ) + 1, ip, port );
+	}
+};
+
+class UdpClient
+{
+public:
+	UdpClient()
+	{
+		initUdpClient();
+	}
+
+	UdpClient( const int port, const std::string& ip )
+	{
+		initUdpClient( port, ip );
+	}
+
+	~UdpClient()
+	{
+	
+	}
+
+	bool initUdpClient()
+	{
+		sock_fd_ = ::socket( AF_INET, SOCK_DGRAM, 0 );
+		if ( sock_fd_ < 0 ) {
+			std::cerr<<"socket Udp Client Failed !"<<std::endl;
+			return false;
+		}
+
+		std::cout<<"Initialized the Udp Client !"<<std::endl;
+		return true;
+	}
+
+	bool initUdpClient( const int port, const std::string& ip )
+	{
+		dst_addr_.sin_family = AF_INET;
+                dst_addr_.sin_addr.s_addr = inet_addr( ip.c_str() );
+                dst_addr_.sin_port = htons( port );
+
+		return initUdpClient();
+	}
+
+	const int write( const char* data, const int len )
+	{
+		return ::sendto( sock_fd_, data, len, 0, (struct sockaddr*)&dst_addr_, sizeof( dst_addr_ ) );
+	}
+
+	const int write( const char* data, const int len, const int port, const std::string& ip )
+	{
+		dst_addr_.sin_family = AF_INET;
+		dst_addr_.sin_addr.s_addr = inet_addr( ip.c_str() );
+		dst_addr_.sin_port = htons( port );
+
+		return ::sendto( sock_fd_, data, len, 0, (struct sockaddr*)&dst_addr_, sizeof( dst_addr_ ) );
+	}
+
+	template<typename T>
+	const int write( const T& data, const char header )
+	{
+		char buffer[sizeof(data) + 1] = {0};
+                buffer[0] = header;
+                memcpy( &buffer[1], &data, sizeof( data ) );
+
+		return ::sendto( sock_fd_, buffer, sizeof(data) + 1, 0, (struct sockaddr*)&dst_addr_, sizeof( dst_addr_ ) );
+	}
+
+	template<typename T>
+	const int write( const T& data, const char header, const int port, const std::string& ip )
+	{
+		char buffer[sizeof(data) + 1] = {0};
+		buffer[0] = header;
+		memcpy( &buffer[1], &data, sizeof( data ) );
+
+		dst_addr_.sin_family = AF_INET;
+                dst_addr_.sin_addr.s_addr = inet_addr( ip.c_str() );
+                dst_addr_.sin_port = htons( port );
+
+                return ::sendto( sock_fd_, buffer, sizeof(data) + 1, 0, (struct sockaddr*)&dst_addr_, sizeof( dst_addr_ ) );
+	}
+
+private:
+	int sock_fd_ = -1;
+	struct sockaddr_in dst_addr_;
 };
 
 }

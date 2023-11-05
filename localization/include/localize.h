@@ -10,8 +10,11 @@
 
 
 #include <fstream>
+#include <chrono>
 
-#define FILE_RECORD
+#define BUFFER_SIZE 12
+
+//#define FILE_RECORD
 
 namespace chassis
 {
@@ -67,7 +70,7 @@ private:
 	bool init()
 	{
 		// 1. instance of the Receiver
-		udp_serv_ = new transport::Receiver<10>( 2333 );
+		udp_serv_ = new transport::Receiver( 2333 );
 
 		// 2. imu init & calibration
 		if ( !imu_.init() ) return false;
@@ -106,10 +109,7 @@ private:
 		// 2. motor control
 		motor_.motorControl( motor_data_ );
 
-		std::cout<<"detal angle = "<<motor_data_.delta_angle<<std::endl;
-
 		// 3. get imu data
-		//imu_.getImuData( imu_data_ );
 		value_type gz; // imu measurement
 		imu_.getGyroZ( gz );
 		gz = -gz;
@@ -146,39 +146,52 @@ private:
 		if ( poseDiffLargerThan( robot_pose_, last_key_pose_ ) ) {
 			last_key_pose_ = robot_pose_;
 			sensor::Pose2D<value_type> pose( robot_pose_[0], robot_pose_[1], robot_pose_[2] );
-			udp_serv_->send( pose );
+			//udp_serv_->send( pose );
 
 #ifdef FILE_RECORD
 			//pose_out_ << robot_pose_[0]<<" "<<robot_pose_[1]<<" "<<robot_pose_[2]<<std::endl;
 #endif
 		}
+
+		return;
 	}
 
 	void recverCallback( int fd, void* arg )
 	{
 		std::cout<<"recver callback ..."<<std::endl;
-		
-		int command = 0;
-		udp_serv_->receive( command );
 	
-		switch ( command ) {
-			case 0x01 : { // forwad
-				motor_.cacuRPM( 0.05f, 0.0f );
-				break;				
-			}
-			case 0x02 : { // turn left
-				motor_.cacuRPM( 0.0f, 1.5f );
-				break;
-			}
-			case 0x03 : { // turn left
-                                motor_.cacuRPM( 0.0f, -1.5f );
-                                break;
-                        }	  
-			case 0x04 : { // stop
-				motor_.cacuRPM( 0.0f, 0.0f );	    
-			}  
-			default : break;
+		int ret = udp_serv_->read( recv_buffer_, BUFFER_SIZE );
+		if ( ret == 12 ) { // aruco detected pose
+			Vector3 aruco_detected_pose = Vector3::Zero();
+			memcpy( &aruco_detected_pose, recv_buffer_, 12 );
+			std::cout<<"aruco detected pose = "<<aruco_detected_pose.transpose()<<std::endl;
+
 		}
+		else if ( ret == 4 ) { // command
+			int command = 0;
+			memcpy( &command, recv_buffer_, 4 );
+	
+			switch ( command ) {
+				case 0x01 : { // forwad
+					motor_.cacuRPM( 0.05f, 0.0f );
+					break;				
+				}
+				case 0x02 : { // turn left
+					motor_.cacuRPM( 0.0f, 1.5f );
+					break;
+				}
+				case 0x03 : { // turn left
+        	                        motor_.cacuRPM( 0.0f, -1.5f );
+                	                break;
+	                        }	  
+				case 0x04 : { // stop
+					motor_.cacuRPM( 0.0f, 0.0f );	    
+				}  
+				default : break;
+			}
+		}
+
+		return;
 	}
 
 	bool poseDiffLargerThan( const Vector3& pose_now, const Vector3& pose_pre )
@@ -203,7 +216,8 @@ private:
 	event::EpollEvent event_instance_;
 
 	// udp server
-	transport::Receiver<10>* udp_serv_;
+	transport::Receiver* udp_serv_;
+	char recv_buffer_[BUFFER_SIZE] = { 0 };
 
 	// motor data & imu data
 	sensor::MotorData<value_type> motor_data_;
