@@ -1,5 +1,7 @@
 #include "robot_motion.h"
 
+// ------------------------ GLOBAL DATA ----------------------- //
+transport::UdpClient udp_client_ = transport::UdpClient( LocalizationProcessRecverPort, "127.0.0.1" );
 // ---------------- State Forward Declarations ----------------- //
 class Stop;
 class Rotation;
@@ -21,7 +23,7 @@ public:
 			std::cout<<" send Relocalization Goal Pose "<<std::endl;
 			
 			Eigen::Vector2f required_relocalization_goal_pose( 0.25, 0.0 );
-			int ret = this->udp_client_.write( required_relocalization_goal_pose, TargetPoseMsgHeader );
+			int ret = udp_client_.write( required_relocalization_goal_pose, TargetPoseMsgHeader );
 			std::cout<<" send required relocalization goal pose : "<<ret<<std::endl;
 		};
 
@@ -46,7 +48,7 @@ public:
 		auto action = [=]() {
                         std::cout<<" send Goal Pose !"<<std::endl;
 
-			int ret = this->udp_client_.write( e.goal_pose, TargetPoseMsgHeader );
+			int ret = udp_client_.write( e.goal_pose, TargetPoseMsgHeader );
 			std::cout<<" send required goal pose : "<<ret<<std::endl;
                 };
 
@@ -58,7 +60,7 @@ public:
 		auto action = [=]() {
                         std::cout<<" send Goal Yaw !"<<std::endl;
 
-			int ret = this->udp_client_.write( e.goal_yaw, TargetYawMsgHeader );
+			int ret = udp_client_.write( e.goal_yaw, TargetYawMsgHeader );
 			std::cout<<" send required goal yaw : "<<ret<<std::endl;
                 };
 

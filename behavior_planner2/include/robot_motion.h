@@ -92,8 +92,8 @@ public:
 	// exit actions in some states
         virtual void exit( void );
 
-protected:
-	transport::UdpClient udp_client_ = transport::UdpClient( LocalizationProcessRecverPort, "127.0.0.1" );
+//protected:
+//	transport::UdpClient udp_client_ = transport::UdpClient( LocalizationProcessRecverPort, "127.0.0.1" );
 };
 
 

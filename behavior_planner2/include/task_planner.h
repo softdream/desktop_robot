@@ -71,7 +71,7 @@ public:
 		}
 	}		
 
-private:
+public:
 	// robot attributes
 	static int stamina_value_;
 	static int mood_value_;

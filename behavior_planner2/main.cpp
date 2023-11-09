@@ -25,6 +25,7 @@ RelocalizedPoseDetected relocalized_pose_detected_event;
 
 // for task planning
 planning::TaskPlanner task_planner;
+bool is_event_occured = true;
 // ----------------------------------------------------------------------------- //
 
 void recvCallback( int fd, void* arg )
@@ -54,6 +55,8 @@ void recvCallback( int fd, void* arg )
 			else {
 				task_planner.staminaValueDecrease();
 				task_planner.errorValueIncrease();
+
+				is_event_occured = true;
 			}
 		}
 		else if ( msg == sensor::ArriveGoalYaw ) { // arrived the goal yaw
@@ -61,14 +64,20 @@ void recvCallback( int fd, void* arg )
 		
 			task_planner.staminaValueDecrease();
 			task_planner.errorValueIncrease();
+
+			is_event_occured = true;
 		}
 		else if ( msg == sensor::Timeout || msg == sensor::RelocalizaitonTimeOut ) { // time out
 			send_event( time_out_event );
+
+			is_event_occured = true;
 		}
 		else if ( msg == sensor::GotRelocalizedPose ) { // got the relocalized pose
 			send_event( relocalized_pose_detected_event );	
 
 			task_planner.errorValueDecrease();
+
+			is_event_occured = true;
 		}
 	}
 }
@@ -91,6 +100,12 @@ void taskPlanningThread()
 	planning::Goal<float> goal_generator;
 
 	while ( 1 ) {
+		usleep( 500000 );
+		if ( is_event_occured == false ) continue;
+
+		std::cout<<"stamina value = "<<task_planner.stamina_value_<<std::endl;
+		std::cout<<"error_value = "<<task_planner.error_value_<<std::endl;
+
 		auto next_status = task_planner.cacuNextStatus();
 
 		if ( next_status == planning::HangOutState ) {
@@ -98,15 +113,20 @@ void taskPlanningThread()
 			std::cout<<"goal pose : ( "<<goal_pose.transpose()<<" )"<<std::endl;
 
 			send_event( GoalPose( goal_pose ) );
+			is_event_occured = false;
 		}
 		else if ( next_status == planning::RestState ) {
-		
+			//task_planner.staminavalueIncrease();
+			task_planner.stamina_value_ = 100;
+
+			is_event_occured = true;
 		}
 		else if ( next_status == planning::RelocalizationState ) {
+			relocalization_goal_pose_event.relocalization_goal_pose_flag = true;
+			send_event( relocalization_goal_pose_event );
 		
+			is_event_occured = false;
 		}
-
-		usleep( 500000 );
 	}
 }
 
@@ -117,12 +137,12 @@ int main()
 	// initial fsm state
 	fsm_list::start();
 
-	// test
-	relocalization_goal_pose_event.relocalization_goal_pose_flag = true;
-	send_event( relocalization_goal_pose_event );
 
 	std::thread t1( eventsRecvThread );
+	std::thread t2( taskPlanningThread );
+
 	t1.join();
+	t2.join();
 
 	return 0;
 }

@@ -73,7 +73,7 @@ private:
 
 private:
 	Vector2 e_fence_lt_ = Vector2( 0.3, -0.3 );
-	Vector2 e_fence_rb_ = Vector2( 0.0, 0.3 );
+	Vector2 e_fence_rb_ = Vector2( 0.05, 0.3 );
 	
 	Vector2 previous_pose_ = Vector2::Zero();
 };
