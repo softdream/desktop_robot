@@ -37,14 +37,10 @@ bool is_event_occured = false;
 
 timer::Timer timer_instance;
 
-// for entertainment status
 bool is_entertainment_needed = false;
 std::mutex entertainment_mux;
 std::condition_variable entertainment_cv;
 bool is_entertainment_ready = false;
-
-// for rest status
-bool is_rest_needed = false;
 // ----------------------------------------------------------------------------- //
 
 void recvCallback( int fd, void* arg )
@@ -79,12 +75,7 @@ void recvCallback( int fd, void* arg )
 
 					send_event( GoalYaw( M_PI ) );
 				}
-				else if ( is_rest_needed ) {
-					sleep( 1 );
-				
-					send_event( GoalYaw( 0.0 ) );
-				}
-				// don't need anything
+				// don't need relocalization
 				else {
 					is_event_occured = true;	
 					event_cv.notify_one();
@@ -101,11 +92,6 @@ void recvCallback( int fd, void* arg )
 
 					is_entertainment_ready = true;
 					entertainment_cv.notify_one();
-				}
-				else if ( is_rest_needed ) {
-					sleep( 1 );
-
-					
 				}
 
 				break;

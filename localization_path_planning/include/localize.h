@@ -261,9 +261,11 @@ private:
 		// 4.3 update the old value
 		pre_gz = gz;
 	
-		// 4.4 is key pose ?
+		// 4.4 is key pose 
 		if ( poseDiffLargerThan( robot_pose_, last_key_pose_ ) ) {
 			last_key_pose_ = robot_pose_;
+
+                        udp_serv_->send( robot_pose_, "127.0.0.1", BehaviorPlannerProcessRecverPort );	
 
 #ifdef FILE_RECORD
 			//pose_out_ << robot_pose_[0]<<" "<<robot_pose_[1]<<" "<<robot_pose_[2]<<std::endl;

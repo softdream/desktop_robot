@@ -79,6 +79,11 @@ void recvCallback( int fd, void* arg )
 
 			is_event_occured = true;
 		}
+		else if ( msg == sensor::ObstacleDetected ) { // detected a obstacle
+			send_event( ObstacleDetected() );
+
+			is_event_occured = true;
+		}
 	}
 }
 

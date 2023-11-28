@@ -109,6 +109,13 @@ public:
 
 		transit<Stop>( action );
 	}
+
+	void react( const ObstacleDetected& e ) override
+	{
+		std::cout<<"detected a obstacle "<<std::endl;
+
+		transit<Stop>();
+	}
 };
 
 // --------------------- State : Navigation -------------------- //
@@ -131,6 +138,13 @@ public:
         void react( const TimeOut& e ) override
         {
                 std::cout<<" goal yaw : time out "<<std::endl;
+
+                transit<Stop>();
+        }
+
+	void react( const ObstacleDetected& e ) override
+        {
+                std::cout<<"detected a obstacle "<<std::endl;
 
                 transit<Stop>();
         }
@@ -181,6 +195,11 @@ void RobotMotion::react( const RelocalizationGoalYaw& e )
 }
 
 void RobotMotion::react( const RelocalizedPoseDetected& e )
+{
+
+}
+
+void RobotMotion::react( const ObstacleDetected& e )
 {
 
 }

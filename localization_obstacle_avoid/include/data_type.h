@@ -187,6 +187,7 @@ enum MessageType
 	GotRelocalizedPose, // got the relocalized pose
         RelocalizaitonTimeOut, // relocalizaiton time out
 	ObstacleDetected, // detected a obstacle
+	IsKeyPose,  // key pose
 };
 
 }

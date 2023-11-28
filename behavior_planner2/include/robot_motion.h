@@ -60,6 +60,8 @@ struct RelocalizationGoalYaw : tinyfsm::Event
 
 struct RelocalizedPoseDetected : tinyfsm::Event {  };
 
+struct ObstacleDetected : tinyfsm::Event {  };
+
 // --------------------- Robot Motion ( FSM base class ) declarations ----------------- //
 class RobotMotion : public tinyfsm::Fsm<RobotMotion>
 {
@@ -85,6 +87,8 @@ public:
 	virtual void react( const RelocalizationGoalYaw& e );
 
 	virtual void react( const RelocalizedPoseDetected& e );
+
+	virtual void react( const ObstacleDetected& e );
 
 	// entry actions in some states
         virtual void entry( void );

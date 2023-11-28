@@ -73,11 +73,17 @@ void MLP::SaveMLPNetwork(const std::string & filename)const {
   fclose(file);
 };
 void MLP::LoadMLPNetwork(const std::string & filename) {
+  std::cout<<"Load the Model File ..."<<std::endl;
   m_layers_nodes.clear();
   m_layers.clear();
 
   FILE * file;
   file = fopen(filename.c_str(), "rb");
+  if ( !file ) {
+  	std::cout<<"Cannot open the model file !"<<std::endl;
+	return;
+  }
+
   fread(&m_num_inputs, sizeof(m_num_inputs), 1, file);
   fread(&m_num_outputs, sizeof(m_num_outputs), 1, file);
   fread(&m_num_hidden_layers, sizeof(m_num_hidden_layers), 1, file);
