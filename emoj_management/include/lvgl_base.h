@@ -1,0 +1,229 @@
+#ifndef __LVGL_BASE_H
+#define __LVGL_BASE_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+        #include "lvgl.h"
+        #include "fbdev.h"
+        #include "evdev.h"
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include <unistd.h>
+#include <iostream>
+
+// display buffer size
+#define LV_BUF_SIZE 115200              // 240 * 240 * 2
+
+#define IMG_WIDTH 240 
+#define IMG_HEIGTH 240
+#define IMGS_NUM 7
+#define IMG_FILE_SIZE 115200
+
+namespace lvgl
+{
+
+class Lvgl
+{
+private:
+	Lvgl()
+	{
+	
+	}
+
+	~Lvgl()
+	{
+	
+	}
+
+	static Lvgl instance_;
+
+public:	
+	static Lvgl& instance()
+	{
+		return instance_;
+	}	
+
+	void init()
+	{
+		lv_init();
+
+		// linux frame buffer device init
+		fbdev_init();
+
+		// touch pointer device init
+		evdev_init();
+
+		// initialize `disp_buf` with the display buffer(s)
+        	lv_disp_buf_init( &disp_buf_, lvbuf1_, lvbuf2_, LV_BUF_SIZE );
+
+		// initialize and register a display driver
+        	lv_disp_drv_t disp_drv;
+        	lv_disp_drv_init( &disp_drv );
+        	disp_drv.flush_cb = fbdev_flush;        // flushes the internal graphical buffer to the frame buffer
+        	disp_drv.buffer = &disp_buf_;            // set teh display buffere reference in the driver
+        	lv_disp_drv_register( &disp_drv );
+	
+		// initialize and register a pointer device driver
+        	lv_indev_drv_t indev_drv;
+        	lv_indev_drv_init( &indev_drv );
+	        indev_drv.type = LV_INDEV_TYPE_POINTER;
+        	indev_drv.read_cb = evdev_read;    // defined in lv_drivers/indev/evdev.h
+	        lv_indev_drv_register( &indev_drv );
+	
+		// initialize the file system
+                lv_port_fs_init();
+	}
+
+	/*bool loadImgs( const std::string& file_name )
+	{
+		lv_fs_file_t f;
+		
+		memset( buffer_, 0, sizeof( buffer_ ) );
+
+		for ( int i = 0; i < IMGS_NUM; i ++ ) {
+
+			std::string file_path = file_name + std::to_string( i ) + ".bin";
+			
+			lv_fs_res_t res = lv_fs_open( &f, file_path.c_str(), LV_FS_MODE_RD );
+			if ( res != LV_FS_RES_OK ) {
+				std::cerr<<"Failed to Open the file : "<<file_path<<std::endl;
+				return false;
+			}
+
+			lv_fs_seek( &f, 4 );
+
+			res = lv_fs_read( &f, (uint8_t*)buffer_[i], IMG_FILE_SIZE, NULL );
+			if ( res != LV_FS_RES_OK ) {
+				std::cerr<<"Failed to Read the "<<i<<" th file ."<<std::endl;
+				return false;
+			}
+
+			lv_fs_close( &f );
+		}
+	
+		std::cout<<"Read the files : "<<file_name<<"* ."<<std::endl;
+
+		return true;
+	}
+
+	void showImgs()
+	{
+		lv_obj_t* img_obj = lv_img_create( lv_scr_act(), NULL );
+
+		int i = 0;
+		while ( 1 ) {
+			lv_img_dsc_t img;
+                        img.header.always_zero = 0;
+	                img.header.w = 240;
+        	        img.header.h = 240;
+                	img.data_size = 240 * 240 * 2;
+                      	img.header.cf = LV_IMG_CF_TRUE_COLOR;
+			img.data = (const uint8_t*)buffer_[i];
+
+			lv_img_set_src( img_obj, &img );
+			lv_obj_align( img_obj, NULL, LV_ALIGN_CENTER, 0, 0 );
+
+
+			lv_tick_inc( 200 );
+			lv_task_handler();
+			usleep( 200000 );
+
+			std::cout<<"the "<<i<<" th img "<<std::endl;
+
+			i ++;
+			if ( i >= IMGS_NUM ) i = 0;
+		}
+
+		if ( !img_obj ) delete img_obj;
+	}*/
+
+	void showImgs( const std::string& img_path, 
+		       const int imgs_num,
+		       const int perid = 200, // ms
+		       const int interval = 1000  ) // ms
+	{
+		lv_fs_file_t f;
+
+		int i = 0;
+
+		lv_obj_t* img_obj = lv_img_create( lv_scr_act(), NULL );
+
+		while ( !img_show_stop_flag ) {
+			std::string file_name = img_path + std::to_string( i ) + ".bin";
+                        
+                        lv_fs_res_t res = lv_fs_open( &f, file_name.c_str(), LV_FS_MODE_RD );
+                        if ( res != LV_FS_RES_OK ) {
+                                std::cerr<<"Failed to Open the file : "<<file_name<<std::endl;
+                                return ;
+                        }
+
+                        lv_fs_seek( &f, 4 );
+
+			memset( buffer_, 0, sizeof(buffer_) );
+                        res = lv_fs_read( &f, (uint8_t*)buffer_, IMG_FILE_SIZE, NULL );
+                        if ( res != LV_FS_RES_OK ) {
+                                std::cerr<<"Failed to Read the "<<i<<" th file ."<<std::endl;
+                                return ;
+                        }
+
+			lv_img_dsc_t img;
+	                img.header.always_zero = 0;
+        	        img.header.w = IMG_WIDTH;
+                	img.header.h = IMG_HEIGTH;
+	                img.data_size = IMG_FILE_SIZE;
+        	        img.header.cf = LV_IMG_CF_TRUE_COLOR;
+
+			img.data = (const uint8_t*)buffer_;
+
+			lv_img_set_src( img_obj, &img );
+                	lv_obj_align( img_obj, NULL, LV_ALIGN_CENTER, 0, 0 );
+
+			lv_tick_inc( perid );
+                        lv_task_handler();
+                        usleep( perid * 1000 );
+
+                        std::cout<<"the "<<i<<" th img "<<std::endl;
+
+                        i ++;
+                        if ( i >= imgs_num ) {
+				i = 0;
+			
+				usleep( interval * 1000 );
+			}
+
+                        lv_fs_close( &f );
+		}
+
+		if ( !img_obj ) delete img_obj;
+	}
+
+	void stopImgShow()
+	{
+		img_show_stop_flag = true;
+	}
+
+private:
+	// variable to store the display buffers
+	lv_disp_buf_t disp_buf_;
+	
+	// buffer(s). The second buffer is optional
+	lv_color_t lvbuf1_[LV_BUF_SIZE];
+	lv_color_t lvbuf2_[LV_BUF_SIZE];
+
+	// buffers for image files
+	uint8_t buffer_[IMG_FILE_SIZE];
+	
+	// images show stop flag 
+	bool img_show_stop_flag = false;
+};
+
+
+Lvgl Lvgl::instance_;
+
+}
+
+#endif
