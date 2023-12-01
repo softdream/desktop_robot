@@ -195,12 +195,13 @@ enum MessageType
 // ------------------------------- 7. Message Type ---------------------------------- //
 enum EmojType
 {
-	HappyEmoj = 1,
-	BlinkEmoj,
-	SleepEmoj,
-	CoeffEmoj,
-	BookEmoj,
+        HappyEmoj = 1,
+        BlinkEmoj,
+        SleepEmoj,
+        CoeffEmoj,
+        BookEmoj,
 };
+
 
 }
 

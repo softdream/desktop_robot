@@ -1,90 +1,49 @@
-#include "emoj_manage.h"
 #include "event_manage.h"
 #include "data_transport.h"
 #include "data_type.h"
+#include "lvgl_base.h"
 
 #include <thread>
 
-#define BUFFER_SIZE 12
+#define BUFFER_SIZE 4
 
 // --------------------------------- GLOBAL DATA ------------------------------- //
 event::EpollEvent event_instance;
 transport::Receiver udp_srv( EmojManagementProcessPort );
 
-emoj::EmojFactory emoj_factory;
-
 char recv_buffer[BUFFER_SIZE] = { 0 };
-// ---------------------------------------------------------------------------- //
 
-void happyThread()
-{
-	auto happy = emoj_factory.createEmoj<emoj::Happy>();
-        happy->show();
-}
-
-void blinkThread()
-{
-	auto blink = emoj_factory.createEmoj<emoj::Blink>();
-        blink->show();
-}
-
-void sleepThread()
-{
-	auto sleep = emoj_factory.createEmoj<emoj::Sleep>();
-        sleep->show();
-}
-
-void coeffThread()
-{
-	auto coeff = emoj_factory.createEmoj<emoj::Coeff>();
-        coeff->show();
-}
-
-void bookThread()
-{
-	auto book = emoj_factory.createEmoj<emoj::Book>();
-        book->show();
-}
+std::string img_path = "S:../images/sleep_";
+// ----------------------------------------------------------------------------- //
 
 void recvCallback( int fd, void* arg )
 {
         std::cout<<"callback ..."<<std::endl;
 
         int ret = udp_srv.read( recv_buffer, BUFFER_SIZE );
-	if ( ret > 0 ) {
+	if ( ret == 4 ) {
 		sensor::EmojType emoj;
-
-		memset( recv_buffer, 0, sizeof( sensor::EmojType ) );
-		memcpy( &emoj, recv_buffer, sizeof( sensor::EmojType ) );
-		
-		lvgl::Lvgl::instance().stopImgShow();
-		sleep( 1 );
+		memcpy( &emoj, recv_buffer, 4 );
+		std::cout<<"emoj = "<<emoj<<std::endl;
 
 		switch ( emoj ) {
-			case sensor::HappyEmoj : {
-				std::thread t( happyThread );
-       				t.join();				
-			}
-			case sensor::BlinkEmoj : {
-				std::thread t( blinkThread );              
-                                t.join();		 
-			}
 			case sensor::SleepEmoj : {
-				std::thread t( sleepThread );              
-                                t.join();			 
+				img_path = "S:../images/sleep_";	
+				break;
 			}
 			case sensor::CoeffEmoj : {
-				std::thread t( coeffThread );              
-                                t.join();		 
+				img_path = "S:../images/coeff_";
+				break;		 
 			}
 			case sensor::BookEmoj : {
-				std::thread t( bookThread );              
-                                t.join();		
+				img_path = "S:../images/book_";
+				break;		
 			}
 			default : break;
 		}
-	}
 
+	}
+	
 	return;
 }
 
@@ -102,15 +61,35 @@ void eventsRecvThread()
         }
 }
 
+void imgShowThread()
+{
+	int cnt = 0;
+	while ( 1 ) {
+		std::string img_file = img_path + std::to_string( cnt ) + ".bin";
+		lvgl::Lvgl::instance().showOneFrame( img_file );
+	
+		cnt ++;
+                if ( cnt > 8 ) {
+                        cnt = 0;
+                        sleep( 1 );
+                }
+	}
+}
 
 int main()
 {
 	std::cout<<"------------- LVGL TEST ---------------"<<std::endl;
 
+	// 1. init lvgl
 	lvgl::Lvgl::instance().init();
-	
-	eventsRecvThread();
 
+	std::thread t1( eventsRecvThread );
+        std::thread t2( imgShowThread );
+
+        t1.join();
+        t2.join();
+
+	lvgl::Lvgl::instance().close();
 
 	return 0;
 }

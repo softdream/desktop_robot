@@ -137,6 +137,15 @@ public:
 		return dist( gen );
 	}
 
+	const int getRandomValue( const int start, const int end )
+        {
+                std::random_device rd;
+                std::mt19937 gen( rd() );
+
+                std::uniform_int_distribution<int> dist( start, end );
+
+                return dist( gen );
+        }
 
 private:
 	// robot attributes

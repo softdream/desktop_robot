@@ -171,7 +171,9 @@ void eventsRecvThread()
 void restStatusProcessThread()
 {
 	// 1. emoj display
-	
+	sensor::EmojType emoj = sensor::SleepEmoj;
+        udp_srv.send( emoj, "127.0.0.1", EmojManagementProcessPort );
+
 	// 2. move base
 	
 	
@@ -225,7 +227,8 @@ void entertainmentStatusProcessThread()
 void hangoutStatusProcessThread()
 {
 	// 1. emoj display
-	
+	//sensor::EmojType emoj = sensor::SleepEmoj;
+	//udp_srv.send( emoj, "127.0.0.1", EmojManagementProcessPort );
 
 	// 2. move base
 	planning::Goal<float> goal_generator;
@@ -238,7 +241,20 @@ void hangoutStatusProcessThread()
 void enjoymentStatusProcessThread()
 {
 	// 1. emoj display
-
+	auto ret = task_planner.getRandomValue( 0, 1 );
+	switch ( ret ) {
+		case 0 : {
+			sensor::EmojType emoj = sensor::CoeffEmoj;
+        		udp_srv.send( emoj, "127.0.0.1", EmojManagementProcessPort );	 
+			break;
+		}
+		case 1 : {
+			sensor::EmojType emoj = sensor::BookEmoj;
+                        udp_srv.send( emoj, "127.0.0.1", EmojManagementProcessPort );
+                        break;	 
+		}
+		default : break;
+	}
 
         // 2. attribution management
 	int time_duration = task_planner.randomTimeDuration();

@@ -76,136 +76,49 @@ public:
 	
 		// initialize the file system
                 lv_port_fs_init();
-	}
-
-	/*bool loadImgs( const std::string& file_name )
-	{
-		lv_fs_file_t f;
-		
-		memset( buffer_, 0, sizeof( buffer_ ) );
-
-		for ( int i = 0; i < IMGS_NUM; i ++ ) {
-
-			std::string file_path = file_name + std::to_string( i ) + ".bin";
-			
-			lv_fs_res_t res = lv_fs_open( &f, file_path.c_str(), LV_FS_MODE_RD );
-			if ( res != LV_FS_RES_OK ) {
-				std::cerr<<"Failed to Open the file : "<<file_path<<std::endl;
-				return false;
-			}
-
-			lv_fs_seek( &f, 4 );
-
-			res = lv_fs_read( &f, (uint8_t*)buffer_[i], IMG_FILE_SIZE, NULL );
-			if ( res != LV_FS_RES_OK ) {
-				std::cerr<<"Failed to Read the "<<i<<" th file ."<<std::endl;
-				return false;
-			}
-
-			lv_fs_close( &f );
-		}
 	
-		std::cout<<"Read the files : "<<file_name<<"* ."<<std::endl;
-
-		return true;
+		// init the image
+		img_obj_ = lv_img_create( lv_scr_act(), NULL );
 	}
 
-	void showImgs()
+	void showOneFrame( const std::string& file_name, const int perid = 200 ) 
 	{
-		lv_obj_t* img_obj = lv_img_create( lv_scr_act(), NULL );
+		lv_fs_res_t res = lv_fs_open( &f_, file_name.c_str(), LV_FS_MODE_RD );
+                if ( res != LV_FS_RES_OK ) {
+                	std::cerr<<"Failed to Open the file : "<<file_name<<std::endl;
+                        return ;
+                }
 
-		int i = 0;
-		while ( 1 ) {
-			lv_img_dsc_t img;
-                        img.header.always_zero = 0;
-	                img.header.w = 240;
-        	        img.header.h = 240;
-                	img.data_size = 240 * 240 * 2;
-BookEmoj,                      	img.header.cf = LV_IMG_CF_TRUE_COLOR;
-			img.data = (const uint8_t*)buffer_[i];
+		lv_fs_seek( &f_, 4 );
+		memset( buffer_, 0, sizeof(buffer_) );
+		res = lv_fs_read( &f_, (uint8_t*)buffer_, IMG_FILE_SIZE, NULL );
+		if ( res != LV_FS_RES_OK ) {
+                        std::cerr<<"Failed to Read the file ."<<std::endl;
+                        return ;
+                }
 
-			lv_img_set_src( img_obj, &img );
-			lv_obj_align( img_obj, NULL, LV_ALIGN_CENTER, 0, 0 );
+		lv_img_dsc_t img;
+                img.header.always_zero = 0;
+                img.header.w = IMG_WIDTH;
+                img.header.h = IMG_HEIGTH;
+                img.data_size = IMG_FILE_SIZE;
+                img.header.cf = LV_IMG_CF_TRUE_COLOR;
 
+                img.data = (const uint8_t*)buffer_;
 
-			lv_tick_inc( 200 );
-			lv_task_handler();
-			usleep( 200000 );
+                lv_img_set_src( img_obj_, &img );
+                lv_obj_align( img_obj_, NULL, LV_ALIGN_CENTER, 0, 0 );
+		
+		lv_fs_close( &f_ );
 
-			std::cout<<"the "<<i<<" th img "<<std::endl;
-
-			i ++;
-			if ( i >= IMGS_NUM ) i = 0;
-		}
-
-		if ( !img_obj ) delete img_obj;
-	}*/
-
-	void showImgs( const std::string& img_path, 
-		       const int imgs_num,
-		       const int perid = 200, // ms
-		       const int interval = 1000  ) // ms
-	{
-		lv_fs_file_t f;
-
-		int i = 0;
-
-		lv_obj_t* img_obj = lv_img_create( lv_scr_act(), NULL );
-
-		img_show_stop_flag = false;
-
-		while ( !img_show_stop_flag ) {
-			std::string file_name = img_path + std::to_string( i ) + ".bin";
-                        
-                        lv_fs_res_t res = lv_fs_open( &f, file_name.c_str(), LV_FS_MODE_RD );
-                        if ( res != LV_FS_RES_OK ) {
-                                std::cerr<<"Failed to Open the file : "<<file_name<<std::endl;
-                                return ;
-                        }
-
-                        lv_fs_seek( &f, 4 );
-
-			memset( buffer_, 0, sizeof(buffer_) );
-                        res = lv_fs_read( &f, (uint8_t*)buffer_, IMG_FILE_SIZE, NULL );
-                        if ( res != LV_FS_RES_OK ) {
-                                std::cerr<<"Failed to Read the "<<i<<" th file ."<<std::endl;
-                                return ;
-                        }
-
-			lv_img_dsc_t img;
-	                img.header.always_zero = 0;
-        	        img.header.w = IMG_WIDTH;
-                	img.header.h = IMG_HEIGTH;
-	                img.data_size = IMG_FILE_SIZE;
-        	        img.header.cf = LV_IMG_CF_TRUE_COLOR;
-
-			img.data = (const uint8_t*)buffer_;
-
-			lv_img_set_src( img_obj, &img );
-                	lv_obj_align( img_obj, NULL, LV_ALIGN_CENTER, 0, 0 );
-
-			lv_tick_inc( perid );
-                        lv_task_handler();
-                        usleep( perid * 1000 );
-
-                        std::cout<<"the "<<i<<" th img "<<std::endl;
-
-                        i ++;
-                        if ( i >= imgs_num ) {
-				i = 0;
-			
-				usleep( interval * 1000 );
-			}
-
-                        lv_fs_close( &f );
-		}
-
-		if ( !img_obj ) delete img_obj;
+		lv_tick_inc( perid );
+                lv_task_handler();
+                usleep( perid * 1000 );
 	}
 
-	void stopImgShow()
+	void close()
 	{
-		img_show_stop_flag = true;
+		if ( !img_obj_ ) delete img_obj_;
 	}
 
 private:
@@ -221,6 +134,12 @@ private:
 	
 	// images show stop flag 
 	bool img_show_stop_flag = false;
+
+	// file system
+	lv_fs_file_t f_;
+
+	// image
+	lv_obj_t* img_obj_ = nullptr;
 };
 
 
