@@ -21,6 +21,14 @@ INCLUDE_DIRECTORIES(
 	${CMAKE_SOURCE_DIR}/lvgl/include/lv_drivers/indev
 )
 
+# find required eigen3
+FIND_PACKAGE( Eigen3 )
+
+#directory of eigen headers
+INCLUDE_DIRECTORIES( ${EIGEN3_INCLUDE_DIR} )
+
+
+
 LINK_DIRECTORIES( ${CMAKE_SOURCE_DIR}/lvgl/lib )
 
 AUX_SOURCE_DIRECTORY( ${CMAKE_SOURCE_DIR} src_files )

@@ -121,7 +121,7 @@ public:
 	                img.header.w = 240;
         	        img.header.h = 240;
                 	img.data_size = 240 * 240 * 2;
-                      	img.header.cf = LV_IMG_CF_TRUE_COLOR;
+BookEmoj,                      	img.header.cf = LV_IMG_CF_TRUE_COLOR;
 			img.data = (const uint8_t*)buffer_[i];
 
 			lv_img_set_src( img_obj, &img );
@@ -151,6 +151,8 @@ public:
 		int i = 0;
 
 		lv_obj_t* img_obj = lv_img_create( lv_scr_act(), NULL );
+
+		img_show_stop_flag = false;
 
 		while ( !img_show_stop_flag ) {
 			std::string file_name = img_path + std::to_string( i ) + ".bin";
