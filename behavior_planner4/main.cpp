@@ -233,8 +233,8 @@ void entertainmentStatusProcessThread()
 void hangoutStatusProcessThread()
 {
 	// 1. emoj display
-	//sensor::EmojType emoj = sensor::SleepEmoj;
-	//udp_srv.send( emoj, "127.0.0.1", EmojManagementProcessPort );
+	sensor::EmojType emoj = sensor::BlinkEmoj;
+	udp_srv.send( emoj, "127.0.0.1", EmojManagementProcessPort );
 
 	// 2. move base
 	planning::Goal<float> goal_generator;
