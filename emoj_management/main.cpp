@@ -44,6 +44,11 @@ void recvCallback( int fd, void* arg )
 				is_emoj_setted = true;
 				break;		
 			}
+			case sensor::BlinkEmoj : {
+				img_path = "S:../images/blink_";
+                                is_emoj_setted = true;
+                                break;			 
+			}
 			default : break;
 		}
 
