@@ -14,6 +14,8 @@ transport::Receiver udp_srv( EmojManagementProcessPort );
 char recv_buffer[BUFFER_SIZE] = { 0 };
 
 std::string img_path = "S:../images/sleep_";
+
+bool is_emoj_setted = false;
 // ----------------------------------------------------------------------------- //
 
 void recvCallback( int fd, void* arg )
@@ -29,14 +31,17 @@ void recvCallback( int fd, void* arg )
 		switch ( emoj ) {
 			case sensor::SleepEmoj : {
 				img_path = "S:../images/sleep_";	
+				is_emoj_setted = true;
 				break;
 			}
 			case sensor::CoeffEmoj : {
 				img_path = "S:../images/coeff_";
+				is_emoj_setted = true;
 				break;		 
 			}
 			case sensor::BookEmoj : {
 				img_path = "S:../images/book_";
+				is_emoj_setted = true;
 				break;		
 			}
 			default : break;
@@ -65,14 +70,19 @@ void imgShowThread()
 {
 	int cnt = 0;
 	while ( 1 ) {
-		std::string img_file = img_path + std::to_string( cnt ) + ".bin";
-		lvgl::Lvgl::instance().showOneFrame( img_file );
-	
-		cnt ++;
-                if ( cnt > 8 ) {
-                        cnt = 0;
-                        sleep( 1 );
-                }
+		if ( is_emoj_setted ) {
+			std::string img_file = img_path + std::to_string( cnt ) + ".bin";
+			lvgl::Lvgl::instance().showOneFrame( img_file );
+		
+			cnt ++;
+                	if ( cnt > 8 ) {
+                        	cnt = 0;
+                        	sleep( 1 );
+                	}
+		}
+		else {
+			sleep(1);
+		}
 	}
 }
 

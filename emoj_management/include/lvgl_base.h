@@ -81,8 +81,10 @@ public:
 		img_obj_ = lv_img_create( lv_scr_act(), NULL );
 	}
 
-	void showOneFrame( const std::string& file_name, const int perid = 200 ) 
+	void showOneFrame( const std::string& file_name, const int perid = 100 ) 
 	{
+		lv_fs_file_t f_;
+
 		lv_fs_res_t res = lv_fs_open( &f_, file_name.c_str(), LV_FS_MODE_RD );
                 if ( res != LV_FS_RES_OK ) {
                 	std::cerr<<"Failed to Open the file : "<<file_name<<std::endl;
@@ -114,6 +116,7 @@ public:
 		lv_tick_inc( perid );
                 lv_task_handler();
                 usleep( perid * 1000 );
+
 	}
 
 	void close()
@@ -136,7 +139,7 @@ private:
 	bool img_show_stop_flag = false;
 
 	// file system
-	lv_fs_file_t f_;
+	//lv_fs_file_t f_;
 
 	// image
 	lv_obj_t* img_obj_ = nullptr;
