@@ -127,7 +127,10 @@ void recvCallback( int fd, void* arg )
 			}
 			case sensor::GotRelocalizedPose : { // got the relocalized pose
 				send_event( relocalized_pose_detected_event );	
-			
+		
+				// for task planning
+				task_planner.resetDetectedObstacle();
+
 				is_event_occured = true;
 				event_cv.notify_one();
 
@@ -149,6 +152,9 @@ void recvCallback( int fd, void* arg )
 		memcpy( &key_pose, recv_buffer, 12 );
 
 		std::cout<<"key pose : ( "<<key_pose.transpose()<<" )"<<std::endl;
+	
+		// for task planning
+		task_planner.errorValueIncrease();
 	}
 }
 
