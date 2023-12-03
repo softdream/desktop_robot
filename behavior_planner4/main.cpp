@@ -43,6 +43,9 @@ bool is_entertainment_ready = false;
 
 // for rest status
 bool is_rest_needed = false;
+
+// for timeout
+bool is_timeout_flag = false;
 // ----------------------------------------------------------------------------- //
 
 void recvCallback( int fd, void* arg )
@@ -112,9 +115,15 @@ void recvCallback( int fd, void* arg )
 			case sensor::Timeout : { // time out
 				send_event( time_out_event );
 
+				if ( is_entertainment_needed ) {
+					is_timeout_flag = true;
+					is_entertainment_ready = true;
+					event_cv.notify_one();
+				}
+				
 				is_event_occured = true;
 				event_cv.notify_one();
-				
+
 				break;
 			}
 			case sensor::RelocalizaitonTimeOut : {
@@ -214,6 +223,11 @@ void entertainmentStatusProcessThread()
 		break;
 	}
 	is_entertainment_needed = false;
+
+	if ( is_timeout_flag ) {
+		is_timeout_flag = false;
+		return;
+	}
 
 	// 3. attribution management
 	int time_duration = task_planner.randomTimeDuration();
